@@ -1,0 +1,19 @@
+[package]
+name = "tangello_music"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+confy = "0.4.0"
+eframe = "0.18.0"
+egui_extras = { version = "0.18.0", features = ["image"] }
+image = { version = "0.24", features = ["jpeg", "png"] }
+serde = { version = "1.0.137", features = ["derive"] }
+tracing = "0.1.34"
+tracing-subscriber = "0.3.11"
+mpdrs = "0.1.0"
+notify-rust = "4.5.8"
+lofty = "0.6.3"
+dirs = "4.0"
