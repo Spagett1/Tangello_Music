@@ -1,6 +1,7 @@
 
 use eframe::egui::{Ui, Layout, Separator, self, TopBottomPanel, Button, Window, FontDefinitions, FontData, TextStyle, RichText, SidePanel, ScrollArea, CentralPanel, TextEdit};
 use eframe::emath;
+use std::io::BufReader;
 use std::path::{PathBuf};
 use std::{collections::HashMap};
 use eframe::epaint::{FontId, Color32};
@@ -280,11 +281,17 @@ impl Tangello {
                             ui.add_space(PADDING);
 
                             ui.horizontal(|ui|{
+                                if ui.add(Button::new("螺").frame(false)).clicked() {
+                                    match conn.add(&song.file) {
+                                        Ok(_) => (),
+                                        Err(_) => tracing::error!("Song does not exist."),
+                                    }
+                                }
                                 ui.with_layout(Layout::right_to_left(), |ui| {
                                     ui.add(Button::new(RichText::new(album).color(BLUE)).frame(false).small());
                                 });
                             });
-                            ui.add_space(PADDING);
+                            // ui.add_space(PADDING / 2.);
                             ui.add(Separator::default());                   
                         }
                         ui.add_space(40.);
@@ -334,6 +341,12 @@ impl Tangello {
                     ui.add_space(PADDING);
 
                     ui.horizontal(|ui|{
+                                if ui.add(Button::new("羅").frame(false)).clicked() {
+                                    match conn.deleteid(a.place.unwrap().pos) {
+                                        Ok(_) => (),
+                                        Err(_) => tracing::error!("Song does not exist."),
+                                    }
+                                }
                         ui.with_layout(Layout::right_to_left(), |ui| {
                             let map: HashMap<_,_> = a.tags.clone().into_iter().collect();
                             let album = format!("{} ⤴", map["Album"]);
