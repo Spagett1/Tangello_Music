@@ -1,7 +1,6 @@
 
 use eframe::egui::{Ui, Layout, Separator, self, TopBottomPanel, Button, Window, FontDefinitions, FontData, TextStyle, RichText, SidePanel, ScrollArea, CentralPanel, TextEdit};
 use eframe::emath;
-use std::io::BufReader;
 use std::path::{PathBuf};
 use std::{collections::HashMap};
 use eframe::epaint::{FontId, Color32};
