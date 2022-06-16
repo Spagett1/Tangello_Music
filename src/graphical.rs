@@ -1,4 +1,3 @@
-
 use eframe::egui::{Ui, Layout, Separator, self, TopBottomPanel, Button, Window, FontDefinitions, FontData, TextStyle, RichText, SidePanel, ScrollArea, CentralPanel, TextEdit};
 use eframe::emath;
 use std::path::{PathBuf};
@@ -73,7 +72,6 @@ impl Default for TangelloConfig {
             dark_mode: true,
             notifications: true,
             music_path: dirs::audio_dir().unwrap(),
-            // music_path: "/home/spagett/music".to_string(),
             mpd_address: "127.0.0.1:6600".to_string(),
             tmp_music_path: dirs::audio_dir().clone().unwrap().as_os_str().to_str().unwrap().to_string(), 
             tmp_address: "127.0.0.1:6600".to_string(),
@@ -109,8 +107,6 @@ fn configure_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 
 }
-
-
 // Creates some new Text Styles so i can have more font size variation.
 fn body2() -> TextStyle {
     TextStyle::Name("SettingsBody".into())
@@ -130,11 +126,12 @@ impl Tangello {
 
     // This is run once at the beggining of the program
     pub fn new(cc: &eframe::CreationContext<'_>) -> Tangello {
-        configure_fonts(&cc.egui_ctx);
 
         // Shortens the config and tmp_data so we can write it easier
         let config: TangelloConfig = confy::load("tangello").unwrap_or_default();
         let tmp_data: MyTmpData = MyTmpData::default();
+
+        configure_fonts(&cc.egui_ctx);
 
         Tangello {
             config,
@@ -582,6 +579,7 @@ impl Tangello {
                 }
 
             });
+
             egui::menu::bar(ui, |ui| {
             // Toggle Darkmode.
             ui.label(RichText::new("Dark Mode").text_style(body2()));
