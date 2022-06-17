@@ -147,7 +147,7 @@ impl Tangello {
 
             ui.add_space(7.);
             egui::menu::bar(ui, |ui|{
-                let sidebar_btn = ui.button(RichText::new('🎵').text_style(egui::TextStyle::Heading));
+                let sidebar_btn = ui.button(RichText::new("  ").text_style(egui::TextStyle::Heading));
                 // Sets the sidebar_open value, this decides whether to open the sidebar or close it.
                 if sidebar_btn.clicked() && self.tmp_data.sidebar_open == false {
                     self.tmp_data.sidebar_open = true;
