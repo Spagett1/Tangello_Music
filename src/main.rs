@@ -1,15 +1,16 @@
 mod graphical;
-use graphical::Tangello;
 use eframe::egui::{self, Visuals};
 use eframe::NativeOptions;
+use graphical::Tangello;
 use mpdrs::Client;
 
 impl eframe::App for Tangello {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-
         // Define the mpd address and variable which allows us to interact with mpd.
         let address = self.config.mpd_address.clone();
-        let mut conn = Client::connect(address).expect("No mpd server found at this address, remember the default is generally 127.0.0.1:6600");
+        let mut conn = Client::connect(address).expect(
+            "No mpd server found at this address, remember the default is generally 127.0.0.1:6600",
+        );
 
         // Read the settings for whether the user has set light more or dark mode.
         if self.config.dark_mode {
@@ -44,11 +45,10 @@ impl eframe::App for Tangello {
     }
 }
 
-
 fn main() {
     let options = NativeOptions::default();
     eframe::run_native(
-        "Tangello Music", 
+        "Tangello Music",
         options,
         Box::new(|cc| Box::new(Tangello::new(cc))),
     );
