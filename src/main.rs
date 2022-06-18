@@ -12,7 +12,7 @@ impl eframe::App for Tangello {
         let mut conn = Client::connect(address).expect("No mpd server found at this address, remember the default is generally 127.0.0.1:6600");
 
         // Read the settings for whether the user has set light more or dark mode.
-        if self.config.dark_mode == true {
+        if self.config.dark_mode {
             ctx.set_visuals(Visuals::dark());
         } else {
             ctx.set_visuals(Visuals::light());
@@ -37,7 +37,7 @@ impl eframe::App for Tangello {
         self.render_footer(ctx, &mut conn);
 
         // If this is the first pass of the update function (when the program is opened) update the albumart.
-        if self.tmp_data.first_run == true {
+        if self.tmp_data.first_run {
             Tangello::change_image(self, &mut conn);
             self.tmp_data.first_run = false;
         }

@@ -73,7 +73,7 @@ impl Default for TangelloConfig {
             notifications: true,
             music_path: dirs::audio_dir().unwrap(),
             mpd_address: "127.0.0.1:6600".to_string(),
-            tmp_music_path: dirs::audio_dir().clone().unwrap().as_os_str().to_str().unwrap().to_string(), 
+            tmp_music_path: dirs::audio_dir().unwrap().as_os_str().to_str().unwrap().to_string(), 
             tmp_address: "127.0.0.1:6600".to_string(),
         }
     }
@@ -149,9 +149,9 @@ impl Tangello {
             egui::menu::bar(ui, |ui|{
                 let sidebar_btn = ui.button(RichText::new("  ").text_style(egui::TextStyle::Heading));
                 // Sets the sidebar_open value, this decides whether to open the sidebar or close it.
-                if sidebar_btn.clicked() && self.tmp_data.sidebar_open == false {
+                if sidebar_btn.clicked() && !self.tmp_data.sidebar_open {
                     self.tmp_data.sidebar_open = true;
-                } else if sidebar_btn.clicked() && self.tmp_data.sidebar_open == true {
+                } else if sidebar_btn.clicked() && self.tmp_data.sidebar_open {
                     self.tmp_data.sidebar_open = false;
                 }
                 ui.add_space(Ui::available_width(ui) / 2. - 120.);
@@ -168,7 +168,7 @@ impl Tangello {
                     // Sets the settings open value to true
                     if ui.add(Button::new("漣")).clicked() {
                         self.tmp_data.settings_open = self.render_settings(ctx);
-                    } else if self.tmp_data.settings_open == true {
+                    } else if self.tmp_data.settings_open {
                         self.render_settings(ctx);
                     } 
   
@@ -204,7 +204,7 @@ impl Tangello {
 
     // Renders the library, very similar to rendering the queue.
     pub fn render_library(&mut self, conn: &mut Client, ctx: &egui::Context) {
-        if self.tmp_data.first_run == true {
+        if self.tmp_data.first_run {
             self.grab_lib_data(conn);
         }
         CentralPanel::default().show(ctx, |ui| {
@@ -396,16 +396,13 @@ impl Tangello {
     // This is run every time a song changes, stuff like sending a notification and changing the image.
     pub fn song_change(&mut self, conn: &mut Client) {
         if conn.currentsong().unwrap() == None {
-        } else {
-            if self.config.notifications == true {
-                let now_playing: String = format!("Now playing: \"{}\"", conn.currentsong().unwrap().unwrap().title.as_ref().unwrap()); 
-                match Notification::new().summary("Tangello Music").body(&now_playing[..]).timeout(Timeout::Milliseconds(3500)).show() {
-                    Err(_) => tracing::error!("No notification daemon active"),
-                    Ok(_) => ()
-                };
-                Tangello::change_image(self, conn);
-                ()
-            }
+        } else if self.config.notifications {
+            let now_playing: String = format!("Now playing: \"{}\"", conn.currentsong().unwrap().unwrap().title.as_ref().unwrap()); 
+            match Notification::new().summary("Tangello Music").body(&now_playing[..]).timeout(Timeout::Milliseconds(3500)).show() {
+                Err(_) => tracing::error!("No notification daemon active"),
+                Ok(_) => ()
+            };
+            Tangello::change_image(self, conn);
         }
     }
 
