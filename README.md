@@ -14,6 +14,7 @@ mpd
 ```
 1: Set up mpd and start it, the following is a good basic config file if you are running linux 
 https://raw.githubusercontent.com/LukeSmithxyz/voidrice/master/.config/mpd/mpd.conf
+If you are running windows please follow part 1 of this guide https://dsync.blogspot.com/2012/05/setting-up-mpd-ncmpcpp-others-on.html.
 Put that file into `~/.config/mpd/mpd.conf` then start up mpd.
 2: Git clone the repo and cd into it.
 ```
