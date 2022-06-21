@@ -14,19 +14,30 @@ mpd
 ```
 1: Set up mpd and start it, the following is a good basic config file if you are running linux 
 https://raw.githubusercontent.com/LukeSmithxyz/voidrice/master/.config/mpd/mpd.conf
-If you are running windows please follow part 1 of this guide https://dsync.blogspot.com/2012/05/setting-up-mpd-ncmpcpp-others-on.html.
 Put that file into `~/.config/mpd/mpd.conf` then start up mpd.
+
+If you are running windows please follow part 1 of this guide https://dsync.blogspot.com/2012/05/setting-up-mpd-ncmpcpp-others-on.html.
+
 2: Git clone the repo and cd into it.
 ```
 git clone https://github.com/Laar3/Tangello_Music/
 cd Tangello_Music
 ```
-3: Compile with cargo.
-For developement simply run `cargo run` 
-For building the final product with all optimisations enabled, run.
-`cargo build --release`, the binary will then appear in the projects target directory under release (`target/release/tangello_music`)
+## 3: Install.
 
-4: Run the binary with `./tangello_music` or copying it into your path.
+### Option 1.
+Go to the github releases https://github.com/Laar3/Tangello_Music/releases and download the latest binary for your platform.
+
+### Option 2, compiling from source.
+For developement simply run `cargo run` inside the project directory
+
+For building the final product with all optimisations enabled, run.
+
+```cargo build --release```
+
+Depending on your platform it will generate a program in the directory `target/release/` called `tangello_music` (Linux and MacOs) or `tangello_music.exe` on windows. 
+
+4: Run the binary with `./tangello_music` or copy it into your path.
 
 # Helpful hints:
 Currently tangello will only find musics album art when that song is exactly 2 directories deep in your music folder, this is an issue that is being worked on.
