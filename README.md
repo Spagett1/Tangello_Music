@@ -8,8 +8,8 @@ Currently in early development and any help is welcome. Even if you just have su
 
 # Install instructions:
 Dependancies:
+`rust/cargo` (for development or compiling)
 ```
-rust/cargo
 mpd
 ```
 1: Set up mpd and start it, the following is a good basic config file if you are running linux 
