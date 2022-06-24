@@ -11,7 +11,10 @@ impl eframe::App for Tangello {
         let mut conn = Client::connect(address).expect(
             "No mpd server found at this address, remember the default is generally 127.0.0.1:6600",
         );
-
+        // match Client::connect(address) {
+        //     Ok(_) => let mut conn = Client::connect(address).unwrap(),
+        //     Err(_) => panic!(),
+        // };
         // Read the settings for whether the user has set light more or dark mode.
         if self.config.dark_mode {
             ctx.set_visuals(Visuals::dark());

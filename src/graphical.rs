@@ -117,8 +117,7 @@ fn configure_fonts(ctx: &egui::Context) {
         (TextStyle::Monospace,FontId::new(14.0, FontFamily::Proportional)),
         (TextStyle::Button,FontId::new(30.0, FontFamily::Proportional)),
         (TextStyle::Small,FontId::new(10.0, FontFamily::Proportional)),
-    ]
-    .into();
+    ].into();
     ctx.set_style(style);
     ctx.set_fonts(fonts);
 }
@@ -183,6 +182,7 @@ impl Tangello {
 
     // Grabs a vector of every song in the users music library
     fn grab_lib_data(&mut self, conn: &mut Client) {
+        match conn.update() {_ => ()}
         for i in conn.listfiles("").unwrap().iter() {
             if i.0 == "directory" {
                 for b in conn.listfiles(i.1.as_str()).unwrap().iter() {
@@ -610,18 +610,18 @@ impl Tangello {
                         let song_length = conn.status().unwrap().duration.unwrap().as_secs();
                         let song_pos = conn.currentsong().unwrap().unwrap().place.unwrap().pos;
                         let mut current_place = conn.status().unwrap().elapsed.unwrap().as_secs();
-                        ui.add(
+                        let re = ui.add(
                             egui::widgets::Slider::new(&mut current_place, 0..=song_length)
                                 .show_value(false),
                         );
-                        if current_place < conn.status().unwrap().elapsed.unwrap().as_secs() {
+                        if re.changed() && current_place < conn.status().unwrap().elapsed.unwrap().as_secs() {
                             match conn.rewind(current_place.try_into().unwrap()) {
                                 Err(_) => {
                                     tracing::error!("Can not rewind to the requested position")
                                 }
                                 Ok(_) => (),
                             }
-                        } else if current_place > conn.status().unwrap().elapsed.unwrap().as_secs()
+                        } else if re.changed() && current_place > conn.status().unwrap().elapsed.unwrap().as_secs()
                         {
                             match conn.seek(song_pos, current_place.try_into().unwrap()) {
                                 Err(_) => tracing::error!("Can not seek to the requested position"),
