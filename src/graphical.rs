@@ -56,7 +56,7 @@ impl Default for MyTmpData {
             sidebar_open: false,
             panel_size: 0.,
             first_run: true,
-            image: RetainedImage::from_image_bytes("Cover_Art", include_bytes!("../empty.png"))
+            image: RetainedImage::from_image_bytes("Cover_Art", include_bytes!("../assets/empty.png"))
                 .unwrap(),
             songlist_vec: vec![],
             songs: vec![],
@@ -98,7 +98,7 @@ fn configure_fonts(ctx: &egui::Context) {
     // Imports the MesloLGS font from its ttf file in order to enable support for other characters
     fonts.font_data.insert(
         "MesloLGS".to_owned(),
-        FontData::from_static(include_bytes!("../MesloLGS_NF_Regular.ttf")),
+        FontData::from_static(include_bytes!("../assets/MesloLGS_NF_Regular.ttf")),
     );
     fonts
         .families
@@ -190,7 +190,7 @@ impl Tangello {
                 for b in conn.listfiles(i.1.as_str()).unwrap().iter() {
                     if b.0 == "directory" {
                         let path = format!("{}/{}", i.1, b.1);
-                        for a in conn.lsinfo(&path.to_string()).unwrap() {
+                        for a in conn.lsinfo(&path).unwrap() {
                             match a {
                                 mpdrs::lsinfo::LsInfoResponse::Song(song) => {
                                     self.tmp_data.songlist_vec.push(song);
@@ -199,6 +199,25 @@ impl Tangello {
                             };
                         }
                     }
+                    else if b.0 == "file" {
+                        // println!("{}", b.0);
+                        let path = format!("{}/{}", i.1, b.1);
+                        // println!("{:?}", &conn.lsinfo(&path).unwrap()[0]);
+                        match &conn.lsinfo(&path).unwrap()[0] {
+                            mpdrs::lsinfo::LsInfoResponse::Song(song) => {
+                                self.tmp_data.songlist_vec.push(song.clone());
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+            } 
+            else if i.0 == "file" {
+                match &conn.lsinfo(&i.1.to_string()).unwrap()[0] {
+                    mpdrs::lsinfo::LsInfoResponse::Song(song) => {
+                        self.tmp_data.songlist_vec.push(song.clone());
+                    }
+                    _ => (),
                 }
             }
         }
@@ -440,7 +459,7 @@ impl Tangello {
             } else {
                 // If the song has no album art then set the placeholder image.
                 self.tmp_data.image =
-                    RetainedImage::from_image_bytes("Cover_Art", include_bytes!("../empty.png"))
+                    RetainedImage::from_image_bytes("Cover_Art", include_bytes!("../assets/empty.png"))
                         .unwrap()
             }
         };
