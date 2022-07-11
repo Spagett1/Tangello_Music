@@ -47,6 +47,7 @@ pub struct MyTmpData {
     pub view: View,
     search: String,
     search_bar: bool,
+    search_bar_want_focus: bool,
 }
 // Defines the default values for the temporary data
 impl Default for MyTmpData {
@@ -64,6 +65,7 @@ impl Default for MyTmpData {
             view: View::Queue,
             search: "".to_string(),
             search_bar: false,
+            search_bar_want_focus: true,
         }
     }
 }
@@ -184,6 +186,7 @@ impl Tangello {
 
     // Grabs a vector of every song in the users music library
     fn grab_lib_data(&mut self, conn: &mut Client) {
+        self.tmp_data.songlist_vec.clear();
         match conn.update() {_ => ()}
         for i in conn.listfiles("").unwrap().iter() {
             if i.0 == "directory" {
@@ -247,6 +250,8 @@ impl Tangello {
                                 .hint_text("Search")
                                 .desired_width(-10.),
                         );
+
+                        
                         // If the enter key is pressed search
                         if response.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
                             self.tmp_data.songs.clear();
@@ -271,11 +276,21 @@ impl Tangello {
                                 }
                             }
                         }
+                        if self.tmp_data.search_bar_want_focus {
+                            response.request_focus()
+                        }
+                        if response.clicked_elsewhere() {
+                            response.surrender_focus();
+                            self.tmp_data.search_bar_want_focus = false
+                        }
+
+
                     } else {
                         self.tmp_data.songs = self.tmp_data.songlist_vec.clone();
                         ui.add_space(20.);
                         if ui.add(Button::new("")).clicked() {
                             self.tmp_data.search_bar = true;
+                            self.tmp_data.search_bar_want_focus = true;
                         }
                     }
                 });
