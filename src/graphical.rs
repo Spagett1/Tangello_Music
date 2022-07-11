@@ -43,6 +43,7 @@ pub struct MyTmpData {
     image: RetainedImage,
     songlist_vec: Vec<Song>,
     songs: Vec<Song>,
+    prev_song: Vec<Song>,
     pub view: View,
     search: String,
     search_bar: bool,
@@ -59,6 +60,7 @@ impl Default for MyTmpData {
                 .unwrap(),
             songlist_vec: vec![],
             songs: vec![],
+            prev_song: vec![],
             view: View::Queue,
             search: "".to_string(),
             search_bar: false,
@@ -488,19 +490,28 @@ impl Tangello {
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 // Renders the album art.
-                ui.image(
-                    self.tmp_data.image.texture_id(ctx),
-                    emath::Vec2 { x: (90.), y: (90.) },
-                );
 
                 let window_width: f32 = Ui::available_width(ui);
 
                 ui.vertical(|ui| {
                     ui.with_layout(Layout::left_to_right(), |ui| {
                         // If there is no song playing do not try and display song title.
+
                         match conn.status().expect("Can not get the mpd state.").state {
                             State::Stop => (),
                             _ => {
+                                // Probably a better way to do this but check if the song is the same as last cycle and if not refresh the image
+                                if self.tmp_data.prev_song.len() == 0 {
+                                    self.tmp_data.prev_song.push(conn.currentsong().unwrap().unwrap());
+                                }
+                                if self.tmp_data.prev_song[0] != conn.currentsong().unwrap().unwrap() {
+                                    self.change_image(conn);
+                                    self.tmp_data.prev_song[0] = conn.currentsong().unwrap().unwrap();
+                                }
+                                ui.image(
+                                     self.tmp_data.image.texture_id(ctx),
+                                emath::Vec2 { x: (90.), y: (90.) },
+                                );
                                 ui.vertical(|ui| {
                                     ui.label(
                                         RichText::new(
@@ -538,36 +549,21 @@ impl Tangello {
                         // Depending on mpd state render different buttons.
                         match conn.status().expect("Can not get the mpd state.").state {
                             State::Play => {
-                                if ui
-                                    .add(
-                                        Button::new(RichText::new('').text_style(heading3()))
-                                            .frame(false),
-                                    )
-                                    .clicked()
+                                if ui.add(Button::new(RichText::new('').text_style(heading3())).frame(false)).clicked()
                                 {
                                     conn.pause(true)
                                         .expect("The pause state could not be toggled.");
                                 }
                             }
                             State::Pause => {
-                                if ui
-                                    .add(
-                                        Button::new(RichText::new('').text_style(heading3()))
-                                            .frame(false),
-                                    )
-                                    .clicked()
+                                if ui.add(Button::new(RichText::new('').text_style(heading3())).frame(false)).clicked()
                                 {
                                     conn.pause(false)
                                         .expect("The pause state could not be toggled.");
                                 }
                             }
                             State::Stop => {
-                                if ui
-                                    .add(
-                                        Button::new(RichText::new('').text_style(heading3()))
-                                            .frame(false),
-                                    )
-                                    .clicked()
+                                if ui.add(Button::new(RichText::new('').text_style(heading3())).frame(false)).clicked()
                                 {
                                     conn.play().expect("Song could not be played.");
                                     Tangello::change_image(self, conn)
