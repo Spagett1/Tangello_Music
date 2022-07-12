@@ -6,7 +6,7 @@ use eframe::emath;
 use eframe::epaint::{Color32, FontId};
 use egui::FontFamily;
 use egui_extras::RetainedImage;
-use mpdrs::{Client, Song, State};
+use mpdrs::{Client, Song, State, Playlist};
 use notify_rust::{Notification, Timeout};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -34,6 +34,7 @@ pub struct TangelloConfig {
 pub enum View {
     Queue,
     Library,
+    Playlist,
 }
 pub struct MyTmpData {
     settings_open: bool,
@@ -48,6 +49,7 @@ pub struct MyTmpData {
     search: String,
     search_bar: bool,
     search_bar_want_focus: bool,
+    selected_playlist: Vec<Playlist>
 }
 // Defines the default values for the temporary data
 impl Default for MyTmpData {
@@ -66,6 +68,7 @@ impl Default for MyTmpData {
             search: "".to_string(),
             search_bar: false,
             search_bar_want_focus: true,
+            selected_playlist: vec![]
         }
     }
 }
@@ -226,16 +229,91 @@ impl Tangello {
         }
     }
 
+    pub fn render_playlist(&mut self, conn: &mut Client, ctx: &egui::Context) {
+        CentralPanel::default().show(ctx, |ui| {
+            let current_playlist= self.tmp_data.selected_playlist[0].clone();
+            egui::menu::bar(ui, |ui|{
+                ui.vertical_centered(|ui|{
+                    ui.label(RichText::new(&current_playlist.name).text_style(heading2()));
+                });
+
+            });
+            ui.add_space(3.5);
+            ui.separator();
+            ScrollArea::vertical()
+                .max_height(ui.available_height() - 63.)
+                .show(ui, |ui| {
+
+                    for song in conn.playlist(current_playlist.name.as_str()).unwrap() {
+                        let map: HashMap<_, _> = song.tags.clone().into_iter().collect();
+                        let album = format!("{} ⤴", map["Album"]);
+
+                        ui.add_space(PADDING);
+                        ui.horizontal(|ui| {
+                            if ui
+                                .add(
+                                    Button::new(
+                                        RichText::new("▶").color(WHITE).text_style(body2()),
+                                    )
+                                    .frame(false)
+                                    .small(),
+                                )
+                                .clicked()
+                            {
+                                match conn.add(&song.file) {
+                                    Ok(_) => (),
+                                    Err(_) => tracing::error!("Song does not exist."),
+                                }
+                                let number_of_songs = conn.queue().unwrap().len();
+                                let new_song = conn.queue().unwrap()[number_of_songs - 1]
+                                    .place
+                                    .unwrap()
+                                    .pos;
+                                match conn.play_from_position(new_song) {
+                                    Ok(_) => Tangello::change_image(self, conn),
+                                    Err(_) => tracing::error!("Song does not exist."),
+                                }
+                            };
+                            ui.label(
+                                RichText::new(song.title.as_ref().unwrap())
+                                    .color(WHITE)
+                                    .text_style(body2()),
+                            );
+                        });
+
+                        ui.label(song.artist.as_ref().unwrap());
+
+                        ui.add_space(PADDING);
+
+                        ui.horizontal(|ui| {
+                            if ui.add(Button::new("螺").frame(false)).clicked() {
+                                match conn.add(&song.file) {
+                                    Ok(_) => (),
+                                    Err(_) => tracing::error!("Song does not exist."),
+                                }
+                            }
+                            ui.with_layout(Layout::right_to_left(), |ui| {
+                                ui.add(
+                                    Button::new(RichText::new(album).color(BLUE))
+                                        .frame(false)
+                                        .small(),
+                                );
+                            });
+                        });
+                        ui.add(Separator::default());
+                    }
+                    ui.add_space(40.);
+                });
+        });
+
+    }
     // Renders the library, very similar to rendering the queue.
     pub fn render_library(&mut self, conn: &mut Client, ctx: &egui::Context) {
-        if self.tmp_data.first_run {
-            self.grab_lib_data(conn);
-        }
         CentralPanel::default().show(ctx, |ui| {
-            let width = ui.available_width();
             egui::menu::bar(ui, |ui| {
-                ui.add_space(width / 2. - 30.);
-                ui.label(RichText::new("Library").text_style(heading2()));
+                ui.vertical_centered(|ui|{
+                    ui.label(RichText::new("Library").text_style(heading2()));
+                });
 
                 ui.with_layout(Layout::right_to_left(), |ui| {
                     if self.tmp_data.search_bar {
@@ -504,15 +582,32 @@ impl Tangello {
     pub fn render_sidebar(&mut self, conn: &mut Client, ctx: &egui::Context) -> bool {
         self.tmp_data.panel_size = SidePanel::left("left_panel")
             .resizable(false)
+            .default_width(109.35177)
             .show(ctx, |ui| {
                 let panel_width: f32 = Ui::available_width(ui);
-                if ui.add(Button::new("Queue").frame(false)).clicked() {
-                    self.tmp_data.view = View::Queue
+                if ui.add(Button::new("蘿 Queue").frame(false)).clicked() {
+                    self.tmp_data.view = View::Queue;
+                    self.tmp_data.sidebar_open = false
                 }
-                if ui.add(Button::new("Library").frame(false)).clicked() {
+                if ui.add(Button::new(" Library").frame(false).wrap(false)).clicked() {
                     self.grab_lib_data(conn);
-                    self.tmp_data.view = View::Library
+                    self.tmp_data.view = View::Library;
+                    self.tmp_data.sidebar_open = false;
                 }
+                ui.add_space(PADDING);
+                ui.label(RichText::new("Playlists").color(WHITE).text_style(heading2()));
+                ui.add(Separator::default());
+                ScrollArea::vertical().show(ui, |ui|{
+                    for i in conn.playlists().unwrap() {
+                        ui.horizontal(|ui|{
+                            if ui.add(Button::new(&i.name).small().frame(false)).clicked() {
+                                self.tmp_data.selected_playlist.clear();
+                                self.tmp_data.selected_playlist.push(i);
+                                self.tmp_data.view = View::Playlist;
+                            };
+                        });
+                    }
+                });
                 panel_width
             })
             .inner;

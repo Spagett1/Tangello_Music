@@ -34,6 +34,7 @@ impl eframe::App for Tangello {
         match self.tmp_data.view {
             graphical::View::Queue => self.render_queue(&mut conn, ctx),
             graphical::View::Library => self.render_library(&mut conn, ctx),
+            graphical::View::Playlist => self.render_playlist(&mut conn, ctx)
         }
         // self.render_queue(&mut conn, ctx);
         // self.render_library(&mut conn, ctx);
