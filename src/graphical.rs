@@ -9,7 +9,7 @@ use egui_extras::RetainedImage;
 use mpdrs::{Client, Song, State, Playlist};
 use notify_rust::{Notification, Timeout};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap};
 use std::path::PathBuf;
 const PADDING: f32 = 5.0;
 const BLUE: Color32 = Color32::from_rgb(20, 177, 255);
@@ -187,46 +187,50 @@ impl Tangello {
         });
     }
 
+    fn test(&mut self, conn: &mut Client, path: &mut String) {
+        for i in conn.listfiles(path.clone().as_str()).unwrap().iter() {
+            if i.0 == "directory" {
+                let og_path = path.clone();
+                if path == "" {
+                    path.push_str(i.1.as_str());
+                } else {
+                    let tmp = format!("/{}", i.1);
+                    path.push_str(tmp.as_str());
+                }
+                Tangello::test(self, conn, path);
+                path.clear();
+                *path = og_path;
+            } 
+            else if i.0 == "file" && 
+                i.1.contains(".") && 
+                !i.1.contains(".jpg") && 
+                !i.1.contains(".png") 
+            {
+                let mut song_path: String;
+                if path == "" {
+                    song_path = i.1.clone();
+                } else {
+                    song_path = format!("{}/{}", path, i.1);
+                }
+                for i in conn.lsinfo(song_path.as_str()).unwrap() {
+                    match i {
+                        mpdrs::lsinfo::LsInfoResponse::Song(song) => {
+                            self.tmp_data.songlist_vec.push(song)
+                        },
+                        _ => ()
+                    }
+                }
+            }
+        }
+    }
+
     // Grabs a vector of every song in the users music library
     fn grab_lib_data(&mut self, conn: &mut Client) {
         self.tmp_data.songlist_vec.clear();
         match conn.update() {_ => ()}
-        for i in conn.listfiles("").unwrap().iter() {
-            if i.0 == "directory" {
-                for b in conn.listfiles(i.1.as_str()).unwrap().iter() {
-                    if b.0 == "directory" {
-                        let path = format!("{}/{}", i.1, b.1);
-                        for a in conn.lsinfo(&path).unwrap() {
-                            match a {
-                                mpdrs::lsinfo::LsInfoResponse::Song(song) => {
-                                    self.tmp_data.songlist_vec.push(song);
-                                }
-                                _ => (),
-                            };
-                        }
-                    }
-                    else if b.0 == "file" {
-                        // println!("{}", b.0);
-                        let path = format!("{}/{}", i.1, b.1);
-                        // println!("{:?}", &conn.lsinfo(&path).unwrap()[0]);
-                        match &conn.lsinfo(&path).unwrap()[0] {
-                            mpdrs::lsinfo::LsInfoResponse::Song(song) => {
-                                self.tmp_data.songlist_vec.push(song.clone());
-                            }
-                            _ => (),
-                        }
-                    }
-                }
-            } 
-            else if i.0 == "file" {
-                match &conn.lsinfo(&i.1.to_string()).unwrap()[0] {
-                    mpdrs::lsinfo::LsInfoResponse::Song(song) => {
-                        self.tmp_data.songlist_vec.push(song.clone());
-                    }
-                    _ => (),
-                }
-            }
-        }
+        let mut path = "".to_string();
+        self.tmp_data.songlist_vec.clear(); 
+        Tangello::test(self, conn, &mut path);
     }
 
     pub fn render_playlist(&mut self, conn: &mut Client, ctx: &egui::Context) {
@@ -560,6 +564,7 @@ impl Tangello {
 
     // This is run every time a song changes, stuff like sending a notification and changing the image.
     pub fn song_change(&mut self, conn: &mut Client) {
+        Tangello::change_image(self, conn);
         if conn.currentsong().unwrap() == None {
         } else if self.config.notifications {
             let now_playing: String = format!(
@@ -572,10 +577,9 @@ impl Tangello {
                 .timeout(Timeout::Milliseconds(3500))
                 .show()
             {
-                Err(_) => tracing::error!("No notification daemon active"),
+                Err(_) => tracing::error!("No notification daemon active, Please disable notifications in the settings"),
                 Ok(_) => (),
             };
-            Tangello::change_image(self, conn);
         }
     }
 
@@ -634,7 +638,7 @@ impl Tangello {
                                     self.tmp_data.prev_song.push(conn.currentsong().unwrap().unwrap());
                                 }
                                 if self.tmp_data.prev_song[0] != conn.currentsong().unwrap().unwrap() {
-                                    self.change_image(conn);
+                                    self.song_change(conn);
                                     self.tmp_data.prev_song[0] = conn.currentsong().unwrap().unwrap();
                                 }
                                 ui.image(
