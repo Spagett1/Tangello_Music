@@ -1,6 +1,6 @@
 use eframe::egui::{
     self, Button, CentralPanel, FontData, FontDefinitions, Layout, RichText, ScrollArea, Separator,
-    SidePanel, TextEdit, TextStyle, TopBottomPanel, Ui, Window,
+    SidePanel, TextEdit, TextStyle, TopBottomPanel, Ui, Window, Slider,
 };
 use eframe::emath;
 use eframe::epaint::{Color32, FontId};
@@ -28,6 +28,7 @@ pub struct TangelloConfig {
     music_path: PathBuf,
     tmp_music_path: String,
     tmp_address: String,
+    scale: f32,
 }
 
 // This struct contains values that will reset each time the program is closed (used to see what states windows are in, etc.)
@@ -88,6 +89,7 @@ impl Default for TangelloConfig {
                 .unwrap()
                 .to_string(),
             tmp_address: "127.0.0.1:6600".to_string(),
+            scale: 1.,
         }
     }
 }
@@ -97,7 +99,7 @@ pub struct Tangello {
     pub tmp_data: MyTmpData,
 }
 
-fn configure_fonts(ctx: &egui::Context) {
+fn configure_fonts(config: &TangelloConfig,ctx: &egui::Context) {
     let mut fonts = FontDefinitions::default();
     let mut style = (*ctx.style()).clone();
     // Imports the MesloLGS font from its ttf file in order to enable support for other characters
@@ -113,20 +115,18 @@ fn configure_fonts(ctx: &egui::Context) {
 
     // Sets font sizes for the different Text Styles.
     style.text_styles = [
-        (
-            TextStyle::Heading,
-            FontId::new(35.0, FontFamily::Proportional),
-        ),
-        (TextStyle::Body, FontId::new(20.0, FontFamily::Proportional)),
-        (body2(), FontId::new(25.0, FontFamily::Proportional)),
-        (heading2(), FontId::new(27.0, FontFamily::Proportional)),
-        (heading3(), FontId::new(50.0, FontFamily::Proportional)),
-        (TextStyle::Monospace,FontId::new(14.0, FontFamily::Proportional)),
-        (TextStyle::Button,FontId::new(30.0, FontFamily::Proportional)),
-        (TextStyle::Small,FontId::new(10.0, FontFamily::Proportional)),
+        (TextStyle::Heading, FontId::new(35.0 * config.scale, FontFamily::Proportional)),
+        (TextStyle::Body, FontId::new(20.0 * config.scale, FontFamily::Proportional)),
+        (body2(), FontId::new(25.0 * config.scale, FontFamily::Proportional)),
+        (heading2(), FontId::new(27.0 * config.scale, FontFamily::Proportional)),
+        (heading3(), FontId::new(50.0 * config.scale, FontFamily::Proportional)),
+        (TextStyle::Monospace,FontId::new(14.0 * config.scale, FontFamily::Proportional)),
+        (TextStyle::Button,FontId::new(30.0 * config.scale, FontFamily::Proportional)),
+        (TextStyle::Small,FontId::new(10.0 * config.scale, FontFamily::Proportional)),
     ].into();
     ctx.set_style(style);
     ctx.set_fonts(fonts);
+
 }
 // Creates some new Text Styles so i can have more font size variation.
 fn body2() -> TextStyle {
@@ -148,7 +148,7 @@ impl Tangello {
         let config: TangelloConfig = confy::load("tangello").unwrap_or_default();
         let tmp_data: MyTmpData = MyTmpData::default();
 
-        configure_fonts(&cc.egui_ctx);
+        configure_fonts(&config, &cc.egui_ctx);
 
         Tangello { config, tmp_data }
     }
@@ -203,7 +203,9 @@ impl Tangello {
                 *path = og_path;
             } 
             else if i.0 == "file" && 
+                // Make sure files actually have extensions.
                 i.1.contains(".") && 
+                // Ignore cover.jpg type files
                 !i.1.contains(".jpg") && 
                 !i.1.contains(".png") {
 
@@ -646,7 +648,7 @@ impl Tangello {
                                 }
                                 ui.image(
                                      self.tmp_data.image.texture_id(ctx),
-                                emath::Vec2 { x: (90.), y: (90.) },
+                                emath::Vec2 { x: (95. * self.config.scale), y: (95. * self.config.scale) },
                                 );
                                 ui.vertical(|ui| {
                                     ui.label(
@@ -787,6 +789,7 @@ impl Tangello {
                                     mpd_address: self.config.mpd_address.to_string(),
                                     tmp_address: self.config.mpd_address.to_string(),
                                     notifications: self.config.notifications,
+                                    scale: self.config.scale,
                                 },
                             ) {
                                 tracing::error!("Failed to save appstate: {}", e);
@@ -870,6 +873,11 @@ impl Tangello {
                         self.config.notifications = !self.config.notifications;
                     };
                 });
+                    ui.label(RichText::new("Ui Scale.").text_style(body2()));
+                    let scale_slider = ui.add(Slider::new(&mut self.config.scale, 0.5..=3.0));
+                    if scale_slider.drag_released() {
+                        configure_fonts(&self.config, ctx)
+                    }
             });
         // Return that the settings are open
         true
