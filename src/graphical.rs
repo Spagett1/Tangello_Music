@@ -187,7 +187,8 @@ impl Tangello {
         });
     }
 
-    fn test(&mut self, conn: &mut Client, path: &mut String) {
+    // Searches recursively throught the directories for songs.
+    fn search_dirs(&mut self, conn: &mut Client, path: &mut String) {
         for i in conn.listfiles(path.clone().as_str()).unwrap().iter() {
             if i.0 == "directory" {
                 let og_path = path.clone();
@@ -197,21 +198,21 @@ impl Tangello {
                     let tmp = format!("/{}", i.1);
                     path.push_str(tmp.as_str());
                 }
-                Tangello::test(self, conn, path);
+                Tangello::search_dirs(self, conn, path);
                 path.clear();
                 *path = og_path;
             } 
             else if i.0 == "file" && 
                 i.1.contains(".") && 
                 !i.1.contains(".jpg") && 
-                !i.1.contains(".png") 
-            {
-                let mut song_path: String;
-                if path == "" {
-                    song_path = i.1.clone();
+                !i.1.contains(".png") {
+
+                let song_path: String = if path == "" {
+                    i.1.clone()
                 } else {
-                    song_path = format!("{}/{}", path, i.1);
-                }
+                    format!("{}/{}", path, i.1)
+                };
+
                 for i in conn.lsinfo(song_path.as_str()).unwrap() {
                     match i {
                         mpdrs::lsinfo::LsInfoResponse::Song(song) => {
@@ -230,7 +231,7 @@ impl Tangello {
         match conn.update() {_ => ()}
         let mut path = "".to_string();
         self.tmp_data.songlist_vec.clear(); 
-        Tangello::test(self, conn, &mut path);
+        Tangello::search_dirs(self, conn, &mut path);
     }
 
     pub fn render_playlist(&mut self, conn: &mut Client, ctx: &egui::Context) {
@@ -248,7 +249,9 @@ impl Tangello {
                 .max_height(ui.available_height() - 63.)
                 .show(ui, |ui| {
 
+                    let mut pos = 0;
                     for song in conn.playlist(current_playlist.name.as_str()).unwrap() {
+                        pos += 1;
                         let map: HashMap<_, _> = song.tags.clone().into_iter().collect();
                         let album = format!("{} ⤴", map["Album"]);
 
@@ -290,8 +293,8 @@ impl Tangello {
                         ui.add_space(PADDING);
 
                         ui.horizontal(|ui| {
-                            if ui.add(Button::new("螺").frame(false)).clicked() {
-                                match conn.add(&song.file) {
+                            if ui.add(Button::new("羅").frame(false)).clicked() {
+                                match conn.pl_delete(&current_playlist.name, pos - 1) {
                                     Ok(_) => (),
                                     Err(_) => tracing::error!("Song does not exist."),
                                 }
