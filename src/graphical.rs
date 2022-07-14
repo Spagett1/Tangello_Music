@@ -11,11 +11,12 @@ use notify_rust::{Notification, Timeout};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap};
 use std::path::PathBuf;
+use lofty::Probe;
+
 const PADDING: f32 = 5.0;
 const BLUE: Color32 = Color32::from_rgb(20, 177, 255);
 const SLIDER_COLOUR: Color32 = Color32::from_rgb(70, 70, 70);
 const WHITE: Color32 = Color32::from_rgb(190, 190, 190);
-use lofty::Probe;
 
 #[derive(Serialize, Deserialize)]
 // This struct contains elements that will persist in the settings configuration file.
