@@ -25,6 +25,7 @@ impl Tangello {
                                     dark_mode: self.config.dark_mode,
                                     music_path: self.config.music_path.clone(),
                                     tmp_music_path: self.config.tmp_music_path.clone(),
+                                    filetypes: self.config.filetypes.clone(),
                                     mpd_address: self.config.mpd_address.to_string(),
                                     tmp_address: self.config.mpd_address.to_string(),
                                     notifications: self.config.notifications,

@@ -18,13 +18,7 @@ impl Tangello {
                 path.clear();
                 *path = og_path;
             } 
-            else if i.0 == "file" && 
-                // Make sure files actually have extensions.
-                i.1.contains(".") && 
-                // Ignore cover.jpg type files
-                !i.1.contains(".jpg") && 
-                !i.1.contains(".png") {
-
+            else if i.0 == "file" && self.config.filetypes.iter().any(|end| i.1.contains(end)) {
                 let song_path: String = if path == "" {
                     i.1.clone()
                 } else {

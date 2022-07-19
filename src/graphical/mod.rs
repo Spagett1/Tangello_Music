@@ -32,6 +32,7 @@ pub struct TangelloConfig {
     // This is a workaround and i would like to clean it up if possible.
     pub music_path: PathBuf,
     tmp_music_path: String,
+    filetypes: Vec<String>,
     tmp_address: String,
     scale: f32,
 }
@@ -103,6 +104,7 @@ impl Default for TangelloConfig {
                 .unwrap()
                 .to_string(),
             tmp_address: "127.0.0.1:6600".to_string(),
+            filetypes: vec![".flac".to_string(), ".mp3".to_string(), ".ogg".to_string(), "opus".to_string(), "m4a".to_string(), "aif".to_string(), "aiff".to_string(), "wav".to_string(), "oga".to_string(), "mogg".to_string(), "ogv".to_string(), "ogx".to_string(), "ogm".to_string(), "spx".to_string(), "raw".to_string()],
             scale: 1.,
         }
     }
