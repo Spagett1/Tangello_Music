@@ -4,7 +4,7 @@ use eframe::egui::{self, Window, RichText, Layout, Button, Separator, Slider};
 use mpdrs::Client;
 use notify_rust::{Notification, Timeout};
 
-use super::{Tangello, heading2, TangelloConfig, body2, configure_fonts};
+use super::{Tangello, heading2, TangelloConfig, body2, fonts::configure_fonts};
 
 impl Tangello {
     pub fn render_settings(&mut self, ctx: &egui::Context) -> bool {
@@ -115,7 +115,7 @@ impl Tangello {
                     ui.label(RichText::new("Ui Scale.").text_style(body2()));
                     let scale_slider = ui.add(Slider::new(&mut self.config.scale, 0.5..=3.0));
                     if scale_slider.drag_released() {
-                        configure_fonts(&self.config, ctx)
+                        configure_fonts(&self.config, ctx);
                     }
             });
         // Return that the settings are open

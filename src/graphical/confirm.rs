@@ -16,7 +16,7 @@ impl Tangello {
                     self.tmp_data.confirm_open = false;
                     result = true;
                 } 
-                ui.add_space(115. * self.config.scale);
+                ui.add_space(130. * self.config.scale);
                 if ui.button("No").clicked() {
                     self.tmp_data.confirm_open = false;
                 }

@@ -60,11 +60,11 @@ impl Tangello {
                             }
                             ui.with_layout(Layout::right_to_left(), |ui|{
                                 if ui.add(Button::new("").small().frame(false)).clicked() {
+                                    self.tmp_data.view = View::Queue;
                                     self.tmp_data.confirm_open = true;
                                 }
                                 if self.tmp_data.confirm_open {
-                                    if self.confirm_window("Delete Playlist".to_string(), ctx) {
-                                        self.tmp_data.view = View::Queue;
+                                    if self.confirm_window("Delete Playlist?".to_string(), ctx) {
                                         match conn.pl_remove(&i.name) { _ => () }
                                     }
                                 }
