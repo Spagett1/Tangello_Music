@@ -1,0 +1,26 @@
+use mpdrs::Client;
+use notify_rust::{Notification, Timeout};
+
+use crate::graphical::Tangello;
+
+impl Tangello {
+    pub fn song_change(&mut self, conn: &mut Client) {
+        Tangello::change_image(self, conn);
+        if conn.currentsong().unwrap() == None {
+        } else if self.config.notifications {
+            let now_playing: String = format!(
+                "Now playing: \"{}\"",
+                conn.currentsong().unwrap().unwrap().title.as_ref().unwrap()
+            );
+            match Notification::new()
+                .summary("Tangello Music")
+                .body(&now_playing[..])
+                .timeout(Timeout::Milliseconds(3500))
+                .show()
+            {
+                Err(_) => tracing::error!("No notification daemon active, Please disable notifications in the settings"),
+                Ok(_) => (),
+            };
+        }
+    }
+}
