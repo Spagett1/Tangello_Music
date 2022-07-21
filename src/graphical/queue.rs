@@ -14,11 +14,8 @@ impl Tangello {
 
                 ui.with_layout(Layout::right_to_left(), |ui| {
                     ui.add_space(20.);
-                    if ui.add(Button::new("")).clicked() {
-                        match conn.clear() {
-                            Err(_) => tracing::error!("Cannot clear the queue."),
-                            Ok(_) => (),
-                        }
+                    if ui.add(Button::new("")).clicked() && conn.clear().is_err() {
+                        tracing::error!("Cannot clear the queue.")
                     };
                 });
             });

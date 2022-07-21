@@ -18,7 +18,7 @@ impl Tangello {
                             State::Stop => (),
                             _ => {
                                 // Probably a better way to do this but check if the song is the same as last cycle and if not refresh the image
-                                if self.tmp_data.prev_song.len() == 0 {
+                                if self.tmp_data.prev_song.is_empty() {
                                     self.tmp_data.prev_song.push(conn.currentsong().unwrap().unwrap());
                                 }
                                 if self.tmp_data.prev_song[0] != conn.currentsong().unwrap().unwrap() {
@@ -120,19 +120,13 @@ impl Tangello {
                             egui::widgets::Slider::new(&mut current_place, 0..=song_length)
                                 .show_value(false),
                         );
-                        if re.changed() && current_place < conn.status().unwrap().elapsed.unwrap().as_secs() {
-                            match conn.rewind(current_place.try_into().unwrap()) {
-                                Err(_) => {
-                                    tracing::error!("Can not rewind to the requested position")
-                                }
-                                Ok(_) => (),
-                            }
-                        } else if re.changed() && current_place > conn.status().unwrap().elapsed.unwrap().as_secs()
+                        if re.changed() && current_place < conn.status().unwrap().elapsed.unwrap().as_secs() && 
+                            conn.rewind(current_place.try_into().unwrap()).is_err() {
+                            tracing::error!("Can not rewind to the requested position")
+                        } else if re.changed() && current_place > conn.status().unwrap().elapsed.unwrap().as_secs() &&
+                            conn.seek(song_pos, current_place.try_into().unwrap()).is_err() 
                         {
-                            match conn.seek(song_pos, current_place.try_into().unwrap()) {
-                                Err(_) => tracing::error!("Can not seek to the requested position"),
-                                Ok(_) => (),
-                            }
+                            tracing::error!("Can not seek to the requested position")
                         }
                     }
                 });

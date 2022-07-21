@@ -55,14 +55,12 @@ impl Tangello {
                         match Client::connect(self.config.tmp_address.clone()) {
                             Ok(_) => self.config.mpd_address = self.config.tmp_address.clone(),
                             Err(_) => {
-                                match Notification::new()
+                                if Notification::new()
                                     .summary("Tangello Music")
                                     .body("No mpd server found at that address.")
                                     .timeout(Timeout::Milliseconds(3500))
-                                    .show()
-                                {
-                                    Err(_) => tracing::error!("No notification daemon active"),
-                                    Ok(_) => (),
+                                    .show().is_err() {
+                                    tracing::error!("No notification daemon active");
                                 };
                             }
                         }

@@ -17,10 +17,9 @@ impl Tangello {
                     if ui.add(Button::new("")).clicked() {
                         self.tmp_data.confirm_open = true;
                     }
-                    if self.tmp_data.confirm_open {
-                        if self.confirm_window("Clear Playlist?".to_string(), ctx) {
-                            match conn.pl_clear(&current_playlist.name) { _ => () };
-                        }
+                    if self.tmp_data.confirm_open && self.confirm_window("Clear Playlist?".to_string(), ctx) &&
+                    conn.pl_clear(&current_playlist.name).is_err() {
+                        tracing::error!("Could not clear playlist.")
                     }
                 });
             });
@@ -31,9 +30,10 @@ impl Tangello {
                 .max_height(ui.available_height() - 63.)
                 .show(ui, |ui| {
 
-                    let mut pos = 0;
-                    for song in conn.playlist(current_playlist.name.as_str()).unwrap() {
-                        pos += 1;
+                    // let mut pos = 0;
+                    // for song in conn.playlist(current_playlist.name.as_str()).unwrap() 
+                    for (pos, song) in conn.playlist(current_playlist.name.as_str()).unwrap().into_iter().enumerate() {
+                        // pos += 1;
                         let map: HashMap<_, _> = song.tags.clone().into_iter().collect();
                         let album = format!("{} ⤴", map["Album"]);
 
@@ -76,7 +76,13 @@ impl Tangello {
 
                         ui.horizontal(|ui| {
                             if ui.add(Button::new("羅").frame(false)).clicked() {
-                                match conn.pl_delete(&current_playlist.name, pos - 1) {
+                                let position = if (pos - 1) <  4294967295 {
+                                    tracing::error!("How on earth do you have more than 4294967295 songs?"); 
+                                    4294967295
+                                } else {
+                                    (pos - 1).try_into().unwrap()
+                                };
+                                match conn.pl_delete(&current_playlist.name, position ) {
                                     Ok(_) => (),
                                     Err(_) => tracing::error!("Song does not exist."),
                                 }

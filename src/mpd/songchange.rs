@@ -12,14 +12,12 @@ impl Tangello {
                 "Now playing: \"{}\"",
                 conn.currentsong().unwrap().unwrap().title.as_ref().unwrap()
             );
-            match Notification::new()
+            if Notification::new()
                 .summary("Tangello Music")
                 .body(&now_playing[..])
                 .timeout(Timeout::Milliseconds(3500))
-                .show()
-            {
-                Err(_) => tracing::error!("No notification daemon active, Please disable notifications in the settings"),
-                Ok(_) => (),
+                .show().is_err() {
+                tracing::error!("No notification daemon active, Please disable notifications in the settings");
             };
         }
     }

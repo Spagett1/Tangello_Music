@@ -11,7 +11,9 @@ impl Tangello {
                 ui.with_layout(Layout::left_to_right(), |ui|{
                     if ui.add(Button::new(" Save")).clicked() {
                         for i in &self.tmp_data.add_playlist_songs {
-                            match conn.pl_push(&self.tmp_data.new_playlist_name, &i.file) { _ => ()};
+                            if conn.pl_push(&self.tmp_data.new_playlist_name, &i.file).is_err() { 
+                                tracing::error!("Could not add song to playlist.")
+                            };
                         }
                     }
                 });

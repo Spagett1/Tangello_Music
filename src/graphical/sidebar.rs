@@ -63,9 +63,10 @@ impl Tangello {
                                     self.tmp_data.view = View::Queue;
                                     self.tmp_data.confirm_open = true;
                                 }
-                                if self.tmp_data.confirm_open {
-                                    if self.confirm_window("Delete Playlist?".to_string(), ctx) {
-                                        match conn.pl_remove(&i.name) { _ => () }
+                                if self.tmp_data.confirm_open && self.confirm_window("Delete Playlist?".to_string(), ctx) {
+                                    match conn.pl_remove(&i.name) {
+                                        Ok(_) => (),
+                                        Err(_) => tracing::error!("Could not remove songs from playlist")
                                     }
                                 }
                             });
