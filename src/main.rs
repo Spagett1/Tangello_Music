@@ -7,6 +7,7 @@ use mpdrs::Client;
 
 impl eframe::App for Tangello {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+
         // Define the mpd address and variable which allows us to interact with mpd.
         let address = self.config.mpd_address.clone();
         let mut conn = Client::connect(address).expect(
@@ -50,7 +51,7 @@ impl eframe::App for Tangello {
 
         // If this is the first pass of the update function (when the program is opened) update the albumart.
         if self.tmp_data.first_run {
-            Tangello::change_image(self, &mut conn);
+            Tangello::song_change(self, &mut conn);
             self.tmp_data.first_run = false;
         }
     }

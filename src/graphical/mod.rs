@@ -61,7 +61,9 @@ pub struct MyTmpData {
     confirm_open: bool,
     new_playlist_name: String,
     new_playlist_open: bool,
-    add_playlist_songs: Vec<Song>
+    add_playlist_songs: Vec<Song>,
+    pub song_length: f64,
+    pub song_pos: u32
 }
 // Defines the default values for the temporary data
 impl Default for MyTmpData {
@@ -85,6 +87,8 @@ impl Default for MyTmpData {
             new_playlist_name: "".to_string(),
             new_playlist_open: false,
             add_playlist_songs: vec![],
+            song_length: 0.,
+            song_pos: 0
         }
     }
 }
