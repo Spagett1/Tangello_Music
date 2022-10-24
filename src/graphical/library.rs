@@ -124,13 +124,12 @@ impl Tangello {
                                     Err(_) => tracing::error!("Song does not exist."),
                                 }
                             }
-                            ui.with_layout(Layout::right_to_left(), |ui| {
-                                ui.add(
-                                    Button::new(RichText::new(album).color(BLUE))
-                                        .frame(false)
-                                        .small(),
-                                );
-                            });
+                            ui.add_space(20. * self.config.scale);
+                            ui.add(
+                                Button::new(RichText::new(album).color(BLUE))
+                                    .frame(false)
+                                    .small(),
+                            );
                         });
                         ui.add(Separator::default());
                     }

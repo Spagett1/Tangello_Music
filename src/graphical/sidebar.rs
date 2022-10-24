@@ -7,7 +7,7 @@ impl Tangello {
     pub fn render_sidebar(&mut self, conn: &mut Client, ctx: &egui::Context) -> bool {
         self.tmp_data.panel_size = SidePanel::left("left_panel")
             .resizable(false)
-            .default_width(109.35177)
+            .default_width(109.35177 * self.config.scale)
             .show(ctx, |ui| {
                 let panel_width: f32 = Ui::available_width(ui);
                 if ui.add(Button::new("蘿 Queue").frame(false)).clicked() {
