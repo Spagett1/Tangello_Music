@@ -1,7 +1,7 @@
 # Tangello_Music
 Welcome to Tangello music, a graphical mpd client written in rust using egui.
 
-Currently in early development and any help is welcome. Even if you just have suggestions for new features please open an issue or shoot me an email at `laar@tutanota.com`.
+# this project is currently unmaintained and not ready for use.
 ![image](https://user-images.githubusercontent.com/77225642/173051231-acbaf78c-6398-434a-8673-e9ed7c67a28e.png)
 
 
